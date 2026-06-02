@@ -1,12 +1,10 @@
 # Render Blueprint（Render完結構成）。
 # Render ダッシュボード → Blueprints → このリポジトリを指定すると、
-# Webサービス・Postgres をまとめて作成できる。
+# Webサービス・Postgres・日次Cron をまとめて作成できる。
 #
-# ⚠️ Render の Cron Job は無料プランで作成不可（`free not a valid plan for service type cron`）のため、
-#    日次更新は Render の cron サービスではなく外部の無料 cron で行う。
-#    外部 cron（例: cron-job.org）から
-#      https://<あなたのRender URL>/api/cron/refresh?source=official
-#    を 1日1回・ヘッダ "Authorization: Bearer <CRON_SECRET>" 付きで叩く（README参照）。
+# ⚠️ Cron Job は無料プラン不可（`free not a valid plan for service type cron`）。
+#    本構成では有料tier（plan: starter）で作成する。※有料プラン契約が前提。
+#    ＝Render内蔵cronで完結（外部cron不要）。
 #
 # その他の注意:
 #   - free Web サービスは無操作で一定時間後スリープ（次アクセスでコールドスタート）。
@@ -18,8 +16,7 @@ databases:
     databaseName: drugdata
     user: drugdata
 
-# CRON_SECRET / ADMIN_TOKEN を env グループにまとめる。
-# CRON_SECRET は外部 cron からの呼び出し検証に使う（Authorization: Bearer の値）。
+# CRON_SECRET / ADMIN_TOKEN は web と cron で同じ値を共有する必要があるため env グループにまとめる。
 envVarGroups:
   - name: copilot-secrets
     envVars:
@@ -42,7 +39,21 @@ services:
           name: drugdata-now-db
           property: connectionString
 
-# 日次の自動更新は外部 cron（cron-job.org 等）から実施する。
-#   URL  : https://<RenderのWeb URL>/api/cron/refresh?source=official
-#   Header: Authorization: Bearer <CRON_SECRET の値>
-#   頻度 : 1日1回（例: 日本時間9時 = UTC 0時）
+  # 日次の自動更新（Render Cron Job）。有料tierで作成する。
+  # web サービスの /api/cron/refresh を Bearer 認証付きで叩くだけ（取り込み本体は web 側で実行）。
+  - type: cron
+    name: drugdata-now-daily-refresh
+    runtime: node
+    plan: starter # ⚠️ free は不可。starter 以上の有料tierが必要（実プラン名はRenderの表示で要確認）
+    schedule: "0 0 * * *" # 毎日1回（UTC 0時 = 日本時間9時）
+    buildCommand: npm install
+    startCommand: >-
+      curl -fsS -H "Authorization: Bearer $CRON_SECRET"
+      "https://$APP_HOST/api/cron/refresh?source=official"
+    envVars:
+      - fromGroup: copilot-secrets
+      - key: APP_HOST
+        fromService:
+          name: drugdata-now
+          type: web
+          property: host
