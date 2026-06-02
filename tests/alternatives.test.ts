@@ -52,6 +52,19 @@ test("同規格を優先して並べる", () => {
   assert.equal(alts[0].yjCode, "C"); // 同規格が先頭
 });
 
+test("同等性シグナル（equivalence）を付与する", () => {
+  const all = [
+    rec({ yjCode: "A", ingredient: "X", representativeSpec: "5mg", supplyStatus: "限定出荷" }),
+    rec({ yjCode: "B", ingredient: "X", representativeSpec: "10mg", supplyStatus: "通常出荷" }),
+    rec({ yjCode: "C", ingredient: "X", representativeSpec: "5mg", supplyStatus: "通常出荷" }),
+  ];
+  const idx = buildNormalSupplyIndex(all);
+  const alts = autoAlternativesFor(all[0], idx);
+  const byYj = Object.fromEntries(alts.map((a) => [a.yjCode, a.equivalence]));
+  assert.equal(byYj["C"], "same_spec"); // 同規格
+  assert.equal(byYj["B"], "diff_spec"); // 規格差あり
+});
+
 test("自分自身は候補に含めない", () => {
   const all = [rec({ yjCode: "A", ingredient: "X", supplyStatus: "限定出荷" })];
   const idx = buildNormalSupplyIndex(all);

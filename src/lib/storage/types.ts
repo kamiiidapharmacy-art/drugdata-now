@@ -1,4 +1,4 @@
-import type { DrugRecord } from "../types";
+import type { DrugRecord, JobPosting } from "../types";
 
 export interface UpsertDiff {
   inserted: number;
@@ -23,6 +23,10 @@ export interface StorageAdapter {
   upsert(records: DrugRecord[]): Promise<UpsertDiff>;
   appendLog(entry: IngestLogEntry): Promise<void>;
   readLog(): Promise<IngestLogEntry[]>;
+  // 求人掲載
+  allJobs(): Promise<JobPosting[]>;
+  saveJob(job: JobPosting): Promise<void>; // id で upsert
+  deleteJob(id: string): Promise<void>;
 }
 
 // YJコード単位の upsert 差分を計算する共通ロジック（アダプタ間で挙動を揃える）。

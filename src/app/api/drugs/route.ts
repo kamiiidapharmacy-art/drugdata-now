@@ -11,9 +11,11 @@ export async function GET(req: NextRequest) {
 
     const all = sp.get("all") === "1";
     const offset = Math.max(0, Number(sp.get("offset") ?? "0") || 0);
-    const limit = all ? 100000 : 30;
+    const yjParam = sp.get("yj");
+    const limit = all || yjParam ? 100000 : 30;
 
     const q = sp.get("q") ?? undefined;
+    const yjCodes = sp.get("yj")?.split(",").map((s) => s.trim()).filter(Boolean) ?? undefined;
     const statuses = (sp.get("status")?.split(",").filter(Boolean) ?? []).filter((s): s is SupplyStatus =>
       VALID_STATUS.includes(s as SupplyStatus),
     );
@@ -25,7 +27,7 @@ export async function GET(req: NextRequest) {
     const sort =
       sortParam === "verified_desc" || sortParam === "name_asc" ? sortParam : "intel_freshness";
 
-    const result = await queryDrugs({ q, statuses, sources, confidenceOnly, sort, offset, limit });
+    const result = await queryDrugs({ q, yjCodes, statuses, sources, confidenceOnly, sort, offset, limit });
 
     const body: DrugsApiResponse = { ...result };
     return NextResponse.json(body, {

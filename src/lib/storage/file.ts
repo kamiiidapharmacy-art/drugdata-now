@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { DrugRecord } from "../types";
+import type { DrugRecord, JobPosting } from "../types";
 import { SEED_DRUGS } from "../seed";
 import { computeDiff, type StorageAdapter, type UpsertDiff, type IngestLogEntry } from "./types";
 
@@ -10,7 +10,9 @@ export class FileStorage implements StorageAdapter {
   private dataDir = path.join(process.cwd(), "data");
   private drugsFile = path.join(this.dataDir, "drugs.json");
   private logFile = path.join(this.dataDir, "ingest-log.json");
+  private jobsFile = path.join(this.dataDir, "jobs.json");
   private cache: Map<string, DrugRecord> | null = null;
+  private jobsCache: JobPosting[] | null = null;
 
   private ensureDir() {
     try {
@@ -81,5 +83,43 @@ export class FileStorage implements StorageAdapter {
       if (fs.existsSync(this.logFile)) return JSON.parse(fs.readFileSync(this.logFile, "utf8"));
     } catch {}
     return [];
+  }
+
+  // ===== 求人 =====
+  private loadJobs(): JobPosting[] {
+    if (this.jobsCache) return this.jobsCache;
+    let jobs: JobPosting[] = [];
+    try {
+      if (fs.existsSync(this.jobsFile)) jobs = JSON.parse(fs.readFileSync(this.jobsFile, "utf8"));
+    } catch {
+      jobs = [];
+    }
+    this.jobsCache = jobs;
+    return jobs;
+  }
+
+  private persistJobs(jobs: JobPosting[]) {
+    this.ensureDir();
+    this.jobsCache = jobs;
+    try {
+      fs.writeFileSync(this.jobsFile, JSON.stringify(jobs, null, 2), "utf8");
+    } catch {}
+  }
+
+  async allJobs(): Promise<JobPosting[]> {
+    return [...this.loadJobs()];
+  }
+
+  async saveJob(job: JobPosting): Promise<void> {
+    const jobs = this.loadJobs();
+    const idx = jobs.findIndex((j) => j.id === job.id);
+    if (idx >= 0) jobs[idx] = job;
+    else jobs.push(job);
+    this.persistJobs(jobs);
+  }
+
+  async deleteJob(id: string): Promise<void> {
+    const jobs = this.loadJobs().filter((j) => j.id !== id);
+    this.persistJobs(jobs);
   }
 }

@@ -1,38 +1,38 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #f6f7f9;
+  /* 医療情報ポータル基調: やや冷たい紙の地色にカードを浮かせ、
+     紺(インディゴ)を主色に。ステータス色は彩度を抑えて統一感を出す。
+     罫は細く、角丸と影は控えめにして“設計された”静けさを優先する。 */
+  --bg: #eef1f5;
   --surface: #ffffff;
-  --border: #e5e7eb;
-  --border-strong: #d1d5db;
-  --text: #111827;
-  --text-sub: #6b7280;
-  --text-muted: #4b5563;
-  --brand: #2563eb;
-  --brand-deep: #1e3a8a;
-  --status-green: #16a34a;
-  --status-yellow: #ca8a04;
-  --status-yellow-soft: #fef9c3;
-  --status-red: #dc2626;
-  --violet-tint: #f5f3ff;
-  --violet-border: #ddd6fe;
-  --violet-text: #5b21b6;
-}
-
-[data-theme="dark"] {
-  --bg: #0b1220;
-  --surface: #111827;
-  --border: #1f2937;
-  --border-strong: #374151;
-  --text: #f3f4f6;
-  --text-sub: #9ca3af;
-  --text-muted: #cbd5e1;
-  --brand: #60a5fa;
-  --brand-deep: #0f1f4b;
-  --status-yellow-soft: #422006;
-  --violet-tint: #1e1b4b;
-  --violet-border: #4c1d95;
-  --violet-text: #c4b5fd;
+  --surface-2: #f4f6f9;
+  --border: #e2e6ec;
+  --border-strong: #cdd4df;
+  --text: #1b2435;
+  --text-sub: #748194;
+  --text-muted: #4a5667;
+  --brand: #1f3a64;
+  --brand-deep: #15294a;
+  --brand-soft: #eef2f8;
+  --accent: #0f6c83;
+  --accent-soft: #ecf5f7;
+  --ring: rgba(31, 58, 100, 0.35);
+  /* ステータス: 彩度を落とした単色＋淡背景で“控えめに統一”（参考②③） */
+  --status-green: #2f7d51;
+  --status-green-soft: #eef5f0;
+  --status-yellow: #a9690d;
+  --status-yellow-soft: #f8f1e6;
+  --status-red: #c13b38;
+  --status-red-soft: #f9eeed;
+  --status-gray: #5b6677;
+  --status-gray-soft: #f2f4f7;
+  --violet-tint: #eef2f8;
+  --violet-border: #d9e0ec;
+  --violet-text: #1f3a6b;
+  --radius: 8px;
+  --shadow-sm: 0 1px 1px rgba(20, 30, 55, 0.03);
+  --shadow-md: 0 4px 14px rgba(20, 30, 55, 0.06);
 }
 
 html,
@@ -43,6 +43,62 @@ body {
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: "Noto Sans JP", system-ui, sans-serif;
+  /* OSネイティブの和文ゴシックを優先し、Webフォント特有の“量産感”を避ける。 */
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN",
+    "Hiragino Sans", "Yu Gothic UI", "Yu Gothic", "Noto Sans JP", system-ui, sans-serif;
+  font-size: 14.5px;
+  line-height: 1.65;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* 見出しは字間を詰めて引き締める（タイポ階層を明確に） */
+h1, h2, h3 {
+  letter-spacing: -0.012em;
+}
+h1 {
+  letter-spacing: -0.02em;
+}
+/* 数値は等幅で桁を揃える（集計タイル等） */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* キーボード操作時のフォーカスを明確に（視認性・アクセシビリティ） */
+:where(a, button, input, select, textarea):focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring);
+  border-radius: 8px;
+}
+
+/* 横スクロールのチップ列でスクロールバーを隠す */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* モバイルでのタップ領域を確保（最低44px相当） */
+.tap {
+  min-height: 40px;
+}
+
+/* スムーズなテーマ切替 */
+* {
+  transition-property: background-color, border-color, color;
+  transition-duration: 0.15s;
+}
+
+/* 読み込み中のスケルトン */
+@keyframes shimmer {
+  0% { opacity: 0.55; }
+  50% { opacity: 1; }
+  100% { opacity: 0.55; }
+}
+.skeleton {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  animation: shimmer 1.3s ease-in-out infinite;
 }

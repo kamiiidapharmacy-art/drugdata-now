@@ -1,11 +1,12 @@
 {
-  "name": "欠品・代替薬 Copilot Pro",
-  "short_name": "代替薬Pro",
-  "description": "医薬品の欠品状況と代替薬を一覧・検索。出典と確認日つき。",
+  "name": "欠品・代替薬ナビ",
+  "short_name": "欠品・代替薬ナビ",
+  "description": "医薬品の供給状況（欠品・限定出荷・供給停止）と代替薬を、出典と確認日つきで検索できる薬剤師向けの無料ツール。",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f6f7f9",
-  "theme_color": "#1E3A8A",
+  "theme_color": "#1e3a8a",
+  "lang": "ja",
   "icons": [
     {
       "src": "/icon.svg",

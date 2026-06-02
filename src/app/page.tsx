@@ -10,7 +10,7 @@ export default async function Home() {
   return (
     <div className="flex min-h-screen flex-col" style={{ background: "var(--bg)" }}>
       <DisclaimerBanner latestVerifiedDate={latestVerifiedDate} />
-      <Header />
+      <Header latestVerifiedDate={latestVerifiedDate} />
       <DrugExplorer />
     </div>
   );

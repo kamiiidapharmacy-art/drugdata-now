@@ -2,6 +2,7 @@
 
 import type { SupplyStatus } from "@/lib/types";
 import type { AlertSettings as Settings } from "@/lib/useAlertSettings";
+import { BellIcon, ChevronDownIcon } from "./icons";
 
 // 欠品アラート設定（課金の核となる機能の土台）。
 // 設定の保存は useAlertSettings（localStorage）。
@@ -25,11 +26,14 @@ export function AlertSettings({
 }) {
   return (
     <div className="rounded-xl" style={{ background: "var(--violet-tint)", border: "1px solid var(--violet-border)" }}>
-      <button type="button" onClick={onToggleOpen} className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left">
-        <span className="text-sm font-semibold" style={{ color: "var(--violet-text)" }}>
-          🔔 欠品アラート設定（採用品 {watchedCount} 件をウォッチ中{settings.enabled ? " ・ ON" : " ・ OFF"}）
+      <button type="button" onClick={onToggleOpen} aria-expanded={open} className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left">
+        <span className="flex items-center gap-1.5 text-sm font-semibold" style={{ color: "var(--violet-text)" }}>
+          <BellIcon size={16} />
+          欠品アラート設定（採用品 {watchedCount} 件をウォッチ中{settings.enabled ? " ・ ON" : " ・ OFF"}）
         </span>
-        <span style={{ color: "var(--violet-text)" }}>{open ? "▲" : "▼"}</span>
+        <span className="shrink-0 transition-transform" style={{ color: "var(--violet-text)", transform: open ? "rotate(180deg)" : "none" }}>
+          <ChevronDownIcon size={16} />
+        </span>
       </button>
 
       {open && (

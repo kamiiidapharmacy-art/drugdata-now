@@ -22,7 +22,7 @@ export function mhlwDateToIso(yymmdd: string): string {
 
 // 出典ページ HTML から最新の供給状況Excel URL と確認日(verifiedAt)を特定する。
 export async function fetchLatestMhlwXlsx(): Promise<{ url: string; verifiedAt: string }> {
-  const res = await fetch(MHLW_PAGE_URL, { headers: { "User-Agent": "shipping-copilot/1.0" } });
+  const res = await fetch(MHLW_PAGE_URL, { headers: { "User-Agent": "drugdata-now/1.0" } });
   if (!res.ok) throw new Error(`MHLW ページ取得失敗: HTTP ${res.status}`);
   const html = await res.text();
 
@@ -149,7 +149,7 @@ export async function parseMhlwBuffer(
 // アダプタから使う高レベル関数: 最新Excelを取得→パースして RawDrugInput[] を返す。
 export async function fetchMhlwRaws(): Promise<RawDrugInput[]> {
   const { url, verifiedAt } = await fetchLatestMhlwXlsx();
-  const res = await fetch(url, { headers: { "User-Agent": "shipping-copilot/1.0" } });
+  const res = await fetch(url, { headers: { "User-Agent": "drugdata-now/1.0" } });
   if (!res.ok) throw new Error(`MHLW Excel取得失敗: HTTP ${res.status}`);
   const buffer = await res.arrayBuffer();
   return parseMhlwBuffer(buffer, verifiedAt);

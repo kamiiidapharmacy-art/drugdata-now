@@ -12,10 +12,10 @@
 #       1日1回・ヘッダ "Authorization: Bearer <CRON_SECRET>" 付きで叩く（README参照）。
 
 databases:
-  - name: shipping-copilot-db
+  - name: drugdata-now-db
     plan: free
-    databaseName: copilot
-    user: copilot
+    databaseName: drugdata
+    user: drugdata
 
 # CRON_SECRET / ADMIN_TOKEN は web と cron で同じ値を共有する必要があるため env グループにまとめる。
 envVarGroups:
@@ -28,7 +28,7 @@ envVarGroups:
 
 services:
   - type: web
-    name: shipping-copilot-pro
+    name: drugdata-now
     runtime: node
     plan: free
     buildCommand: npm install && npm run build
@@ -37,12 +37,12 @@ services:
       - fromGroup: copilot-secrets
       - key: DATABASE_URL
         fromDatabase:
-          name: shipping-copilot-db
+          name: drugdata-now-db
           property: connectionString
 
   # ↓ 日次の自動更新（Render Cron Job）。無料プランに無い場合は削除し、外部cronで代替。
   - type: cron
-    name: shipping-copilot-daily-refresh
+    name: drugdata-now-daily-refresh
     runtime: node
     plan: free
     schedule: "0 0 * * *" # 毎日1回（UTC 0時 = 日本時間9時）
@@ -54,6 +54,6 @@ services:
       - fromGroup: copilot-secrets
       - key: APP_HOST
         fromService:
-          name: shipping-copilot-pro
+          name: drugdata-now
           type: web
           property: host

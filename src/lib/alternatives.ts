@@ -46,14 +46,17 @@ export function autoAlternativesFor(
       return a.originalDrug.localeCompare(b.originalDrug, "ja");
     });
 
-  return candidates.slice(0, max).map((d) => ({
-    yjCode: d.yjCode,
-    name: d.originalDrug,
-    note:
-      normKey(d.representativeSpec) === targetSpec
+  return candidates.slice(0, max).map((d) => {
+    const sameSpec = normKey(d.representativeSpec) === targetSpec;
+    return {
+      yjCode: d.yjCode,
+      name: d.originalDrug,
+      equivalence: (sameSpec ? "same_spec" : "diff_spec") as "same_spec" | "diff_spec",
+      note: sameSpec
         ? "同成分・同規格の通常出荷品（自動抽出・要確認）"
         : "同成分の通常出荷品（規格差あり・自動抽出・要確認）",
-  }));
+    };
+  });
 }
 
 // 手動の代替薬（CSV取り込み等）に自動候補をマージする。重複は yjCode/name で排除。

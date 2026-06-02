@@ -4,6 +4,7 @@ import { buildNormalSupplyIndex, enrichWithAutoAlternatives } from "./alternativ
 
 export interface QueryOptions {
   q?: string;
+  yjCodes?: string[]; // 指定YJコードのみ（採用品ダッシュボード用の一括取得）
   statuses?: SupplyStatus[];
   sources?: SourceType[];
   confidenceOnly?: boolean; // 確定レイヤーのみ
@@ -20,11 +21,15 @@ const STATUS_RANK: Record<SupplyStatus, number> = {
 };
 
 export async function queryDrugs(opts: QueryOptions = {}) {
-  const { q, statuses, sources, confidenceOnly, sort = "intel_freshness", offset = 0, limit = 30 } = opts;
+  const { q, yjCodes, statuses, sources, confidenceOnly, sort = "intel_freshness", offset = 0, limit = 30 } = opts;
 
   const allRows = await allDrugs();
   let rows = allRows;
 
+  if (yjCodes && yjCodes.length) {
+    const set = new Set(yjCodes);
+    rows = rows.filter((d) => set.has(d.yjCode));
+  }
   if (q && q.trim()) {
     const needle = q.trim().toLowerCase();
     rows = rows.filter((d) =>

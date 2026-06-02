@@ -1,4 +1,4 @@
-import type { DrugRecord } from "./types";
+import type { DrugRecord, JobPosting } from "./types";
 import { FileStorage } from "./storage/file";
 import { PostgresStorage } from "./storage/postgres";
 import type { StorageAdapter, UpsertDiff, IngestLogEntry } from "./storage/types";
@@ -29,4 +29,17 @@ export function appendIngestLog(entry: IngestLogEntry): Promise<void> {
 
 export function readIngestLog(): Promise<IngestLogEntry[]> {
   return getAdapter().readLog();
+}
+
+// ===== 求人掲載 =====
+export function allJobs(): Promise<JobPosting[]> {
+  return getAdapter().allJobs();
+}
+
+export function saveJob(job: JobPosting): Promise<void> {
+  return getAdapter().saveJob(job);
+}
+
+export function deleteJob(id: string): Promise<void> {
+  return getAdapter().deleteJob(id);
 }

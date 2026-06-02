@@ -1,54 +1,77 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { useWatch } from "@/lib/useWatch";
+import { BriefcaseIcon, StarIcon } from "./icons";
 
-export function Header() {
-  const [dark, setDark] = useState(false);
+export function Header({ latestVerifiedDate }: { latestVerifiedDate?: string | null }) {
+  const pathname = usePathname();
+  const onJobs = pathname?.startsWith("/jobs");
+  const watch = useWatch();
 
-  useEffect(() => {
-    setDark(document.documentElement.getAttribute("data-theme") === "dark");
-  }, []);
+  const navBtn = "tap flex items-center rounded-md px-3 text-[13px] font-semibold transition";
 
-  function toggle() {
-    const next = !dark;
-    setDark(next);
-    document.documentElement.setAttribute("data-theme", next ? "dark" : "light");
-    try {
-      localStorage.setItem("theme", next ? "dark" : "light");
-    } catch {}
+  function navStyle(active: boolean): React.CSSProperties {
+    return active
+      ? { background: "var(--brand-soft)", border: "1px solid var(--border-strong)", color: "var(--brand)" }
+      : { background: "transparent", border: "1px solid transparent", color: "var(--text-muted)" };
   }
 
   return (
-    <div className="sticky top-0 z-20" style={{ background: "var(--brand-deep)" }}>
-      <div className="px-4 py-3 sm:px-6 lg:px-10">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div
-              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[11px] font-black text-white"
-              style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.25)" }}
-            >
-              Rx
-            </div>
-            <div>
-              <div className="text-[20px] font-bold leading-tight text-white sm:text-[26px]">
-                欠品・代替薬 Copilot Pro
-              </div>
-              <div className="mt-0.5 text-[12px] sm:text-[14px]" style={{ color: "rgba(255,255,255,0.65)" }}>
-                出典・確認日つき / 採用品ウォッチ対応
-              </div>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={toggle}
-            aria-label="テーマ切替"
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-white transition hover:opacity-80"
-            style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.22)" }}
+    <header
+      className="sticky top-0 z-20"
+      style={{ background: "var(--surface)", borderBottom: "1px solid var(--border)" }}
+    >
+      <div className="mx-auto flex max-w-4xl items-center justify-between gap-3 px-4 py-2.5 sm:px-6">
+        <a href="/" className="flex min-w-0 items-center gap-2.5 transition hover:opacity-90">
+          <span
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[13px] font-black text-white"
+            style={{
+              background: "linear-gradient(155deg, var(--brand) 0%, var(--brand-deep) 100%)",
+              boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.10)",
+            }}
           >
-            {dark ? "☀" : "🌙"}
-          </button>
-        </div>
+            Rx
+          </span>
+          <span className="min-w-0">
+            <span className="block truncate text-[17px] font-bold leading-tight sm:text-[19px]" style={{ color: "var(--text)" }}>
+              欠品・代替薬ナビ
+            </span>
+            {latestVerifiedDate && (
+              <span className="mt-0.5 hidden text-[11.5px] sm:block tnum" style={{ color: "var(--text-sub)" }}>
+                最終更新 {latestVerifiedDate}
+              </span>
+            )}
+          </span>
+        </a>
+
+        <nav className="flex shrink-0 items-center gap-1.5">
+          <a
+            href="/"
+            aria-current={!onJobs ? "page" : undefined}
+            className={`${navBtn} hidden sm:flex`}
+            style={navStyle(!onJobs)}
+          >
+            欠品情報
+          </a>
+          <a href="/jobs" aria-current={onJobs ? "page" : undefined} className={`${navBtn} gap-1.5`} style={navStyle(!!onJobs)}>
+            <BriefcaseIcon size={15} />
+            求人
+          </a>
+          {!onJobs && (
+            <span
+              className="hidden items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[13px] font-semibold sm:inline-flex"
+              style={{ background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--text-muted)" }}
+              title="ウォッチ中の採用品"
+            >
+              <span style={{ color: "var(--brand)" }}>
+                <StarIcon size={14} filled />
+              </span>
+              ウォッチ <span className="tnum" style={{ color: "var(--text)" }}>{watch.ready ? watch.count : 0}</span>
+            </span>
+          )}
+        </nav>
       </div>
-    </div>
+    </header>
   );
 }

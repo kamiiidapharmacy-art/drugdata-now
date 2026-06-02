@@ -1,5 +1,5 @@
 import { Pool } from "pg";
-import type { DrugRecord } from "../types";
+import type { DrugRecord, JobPosting } from "../types";
 import { computeDiff, type StorageAdapter, type UpsertDiff, type IngestLogEntry } from "./types";
 
 // Postgres アダプタ（本番想定 / node-postgres ベース）。
@@ -43,6 +43,14 @@ export class PostgresStorage implements StorageAdapter {
           id BIGSERIAL PRIMARY KEY,
           entry JSONB NOT NULL,
           ran_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        )`);
+        await p.query(`CREATE TABLE IF NOT EXISTS job_postings (
+          id TEXT PRIMARY KEY,
+          data JSONB NOT NULL,
+          status TEXT NOT NULL DEFAULT 'pending',
+          featured BOOLEAN NOT NULL DEFAULT false,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
         )`);
       })();
     }
@@ -106,5 +114,31 @@ export class PostgresStorage implements StorageAdapter {
       "SELECT entry FROM ingest_log ORDER BY ran_at DESC LIMIT 50",
     );
     return rows.map((r) => r.entry);
+  }
+
+  // ===== 求人 =====
+  async allJobs(): Promise<JobPosting[]> {
+    await this.ensureSchema();
+    const { rows } = await getPool().query<{ data: JobPosting }>(
+      "SELECT data FROM job_postings ORDER BY featured DESC, created_at DESC",
+    );
+    return rows.map((r) => r.data);
+  }
+
+  async saveJob(job: JobPosting): Promise<void> {
+    await this.ensureSchema();
+    await getPool().query(
+      `INSERT INTO job_postings (id, data, status, featured, created_at, updated_at)
+       VALUES ($1, $2::jsonb, $3, $4, $5, now())
+       ON CONFLICT (id) DO UPDATE
+         SET data = EXCLUDED.data, status = EXCLUDED.status,
+             featured = EXCLUDED.featured, updated_at = now()`,
+      [job.id, JSON.stringify(job), job.status, job.featured, job.createdAt],
+    );
+  }
+
+  async deleteJob(id: string): Promise<void> {
+    await this.ensureSchema();
+    await getPool().query("DELETE FROM job_postings WHERE id = $1", [id]);
   }
 }
