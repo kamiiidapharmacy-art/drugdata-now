@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "node --test tests/normalize.test.ts tests/parse.test.ts tests/diff.test.ts tests/alternatives.test.ts tests/mhlw.test.ts tests/jobs.test.ts"
+    "test": "node --test tests/normalize.test.ts tests/parse.test.ts tests/diff.test.ts tests/alternatives.test.ts tests/mhlw.test.ts tests/jobs.test.ts tests/patientExplanation.test.ts"
   },
   "dependencies": {
     "exceljs": "^4.4.0",

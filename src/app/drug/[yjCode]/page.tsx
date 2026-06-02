@@ -5,6 +5,7 @@ import type { Equivalence } from "@/lib/types";
 import { STATUS_ACCENT, STATUS_SOFT } from "@/lib/status";
 import { FileTextIcon, PatientIcon, PillIcon } from "@/components/icons";
 import { RecentViewRecorder } from "@/components/RecentViewRecorder";
+import { PatientExplanation } from "@/components/PatientExplanation";
 
 export const dynamic = "force-dynamic";
 
@@ -102,6 +103,8 @@ export default async function DrugDetail({ params }: { params: Promise<{ yjCode:
         </div>
       )}
 
+      <PatientExplanation drug={drug} />
+
       <div className="mt-4 flex flex-wrap gap-2">
         <a
           href={`https://www.pmda.go.jp/PmdaSearch/rdSearch/02/${encodeURIComponent(drug.yjCode)}`}
@@ -121,7 +124,7 @@ export default async function DrugDetail({ params }: { params: Promise<{ yjCode:
           style={{ background: "var(--brand-soft)", color: "var(--brand)", border: "1px solid var(--border)" }}
         >
           <PatientIcon size={16} />
-          患者向け説明（くすりのしおり）
+          くすりのしおり公式（検索）
         </a>
       </div>
 

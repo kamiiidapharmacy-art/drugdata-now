@@ -195,7 +195,7 @@ export function DrugCard({
             style={{ background: "var(--surface)", color: "var(--text-muted)", border: "1px solid var(--border-strong)" }}
           >
             <PatientIcon size={15} />
-            患者向け説明（くすりのしおり）
+            くすりのしおり公式（検索）
           </a>
         </div>
       </div>
