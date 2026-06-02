@@ -1,0 +1,59 @@
+# Render Blueprint（Render完結構成）。
+# Render ダッシュボード → Blueprints → このリポジトリを指定すると、
+# Webサービス・Postgres・日次Cron をまとめて作成できる。
+#
+# ⚠️ このファイルは Render に対して未検証（実デプロイ未確認）。値・プランは要確認。
+#   - free Web サービスは無操作で一定時間後スリープ（次アクセスでコールドスタート）。
+#   - ⚠️ Render の free Postgres は作成から約90日で削除される点に注意（要確認）。
+#   - ⚠️ Render の Cron Job は無料プランに無い可能性が高い（要確認）。
+#       無料で済ませたい場合は、下の cron サービスを使わず、
+#       外部の無料 cron（例: cron-job.org）から
+#       https://<あなたのRender URL>/api/cron/refresh?source=official を
+#       1日1回・ヘッダ "Authorization: Bearer <CRON_SECRET>" 付きで叩く（README参照）。
+
+databases:
+  - name: shipping-copilot-db
+    plan: free
+    databaseName: copilot
+    user: copilot
+
+# CRON_SECRET / ADMIN_TOKEN は web と cron で同じ値を共有する必要があるため env グループにまとめる。
+envVarGroups:
+  - name: copilot-secrets
+    envVars:
+      - key: CRON_SECRET
+        generateValue: true
+      - key: ADMIN_TOKEN
+        generateValue: true
+
+services:
+  - type: web
+    name: shipping-copilot-pro
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - fromGroup: copilot-secrets
+      - key: DATABASE_URL
+        fromDatabase:
+          name: shipping-copilot-db
+          property: connectionString
+
+  # ↓ 日次の自動更新（Render Cron Job）。無料プランに無い場合は削除し、外部cronで代替。
+  - type: cron
+    name: shipping-copilot-daily-refresh
+    runtime: node
+    plan: free
+    schedule: "0 0 * * *" # 毎日1回（UTC 0時 = 日本時間9時）
+    buildCommand: npm install
+    startCommand: >-
+      curl -fsS -H "Authorization: Bearer $CRON_SECRET"
+      "https://$APP_HOST/api/cron/refresh?source=official"
+    envVars:
+      - fromGroup: copilot-secrets
+      - key: APP_HOST
+        fromService:
+          name: shipping-copilot-pro
+          type: web
+          property: host
